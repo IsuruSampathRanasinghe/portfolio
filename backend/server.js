@@ -8,6 +8,7 @@ import {
   notFound,
   errorHandler,
 } from "./middleware/errorMiddleware.js";
+import authRoutes from "./routes/authRoutes.js";
 
 dotenv.config();
 
@@ -36,6 +37,7 @@ app.get("/", (req, res) => {
 
 // API routes
 app.use("/api/health", healthRoutes);
+app.use("/api/auth", authRoutes);
 
 // Error middleware must be placed after routes
 app.use(notFound);
