@@ -5,11 +5,17 @@ export const notFound = (req, res, next) => {
 };
 
 export const errorHandler = (error, req, res, next) => {
-  const statusCode = res.statusCode === 200 ? 500 : res.statusCode;
+  let statusCode = res.statusCode === 200 ? 500 : res.statusCode;
+  let message = error.message;
+
+  if (error.name === "CastError") {
+    statusCode = 400;
+    message = "Invalid resource ID.";
+  }
 
   res.status(statusCode).json({
     success: false,
-    message: error.message,
+    message,
     stack: process.env.NODE_ENV === "production" ? null : error.stack,
   });
 };
