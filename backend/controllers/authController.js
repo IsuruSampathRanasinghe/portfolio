@@ -1,62 +1,86 @@
 import Admin from "../models/Admin.js";
+
 import generateToken from "../utils/generateToken.js";
+import asyncHandler from "../utils/asyncHandler.js";
+import ApiError from "../utils/ApiError.js";
+import { successResponse } from "../utils/apiResponse.js";
+
 
 // POST /api/auth/login
-export const loginAdmin = async (req, res, next) => {
-  try {
+// Public
+export const loginAdmin = asyncHandler(
+  async (req, res) => {
     const { email, password } = req.body;
-
-    if (!email || !password) {
-      res.status(400);
-      throw new Error("Email and password are required.");
-    }
 
     const admin = await Admin.findOne({
       email: email.toLowerCase(),
     });
 
     if (!admin) {
-      res.status(401);
-      throw new Error("Invalid email or password.");
+      throw new ApiError(
+        401,
+        "Invalid email or password."
+      );
     }
 
-    const passwordMatches = await admin.matchPassword(password);
+    const passwordMatches =
+      await admin.matchPassword(password);
 
     if (!passwordMatches) {
-      res.status(401);
-      throw new Error("Invalid email or password.");
+      throw new ApiError(
+        401,
+        "Invalid email or password."
+      );
     }
 
     const token = generateToken(admin._id);
 
-    res.status(200).json({
-      success: true,
-      message: "Login successful.",
-      token,
-      admin: {
-        id: admin._id,
-        name: admin.name,
-        email: admin.email,
-      },
-    });
-  } catch (error) {
-    next(error);
+    return successResponse(
+      res,
+      200,
+      "Login successful.",
+      {
+        token,
+
+        admin: {
+          id: admin._id,
+          name: admin.name,
+          email: admin.email,
+        },
+      }
+    );
   }
-};
+);
+
 
 // GET /api/auth/profile
-export const getAdminProfile = async (req, res) => {
-  res.status(200).json({
-    success: true,
-    admin: req.admin,
-  });
-};
+// Admin
+export const getAdminProfile = asyncHandler(
+  async (req, res) => {
+    return successResponse(
+      res,
+      200,
+      "Admin profile retrieved successfully.",
+      {
+        admin: req.admin,
+      }
+    );
+  }
+);
+
 
 // GET /api/auth/check
-export const checkAuth = async (req, res) => {
-  res.status(200).json({
-    success: true,
-    authenticated: true,
-    admin: req.admin,
-  });
-};
+// Admin
+export const checkAuth = asyncHandler(
+  async (req, res) => {
+    return successResponse(
+      res,
+      200,
+      "Authentication verified.",
+      {
+        authenticated: true,
+        admin: req.admin,
+      }
+    );
+  }
+);

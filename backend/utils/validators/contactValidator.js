@@ -1,0 +1,30 @@
+import { z } from "zod";
+
+export const createContactSchema = z.object({
+  name: z
+    .string()
+    .min(2, "Name must contain at least 2 characters.")
+    .max(100, "Name is too long."),
+
+  email: z
+    .string()
+    .email("Please provide a valid email address."),
+
+  subject: z
+    .string()
+    .min(3, "Subject must contain at least 3 characters.")
+    .max(200, "Subject is too long."),
+
+  message: z
+    .string()
+    .min(10, "Message must contain at least 10 characters.")
+    .max(5000, "Message is too long."),
+});
+
+export const updateContactStatusSchema = z.object({
+  status: z.enum([
+    "Unread",
+    "Read",
+    "Replied",
+  ]),
+});

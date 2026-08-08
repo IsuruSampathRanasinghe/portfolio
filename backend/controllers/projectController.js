@@ -1,64 +1,187 @@
 import Project from "../models/Project.js";
+import cloudinary from "../config/cloudinary.js";
+
+import asyncHandler from "../utils/asyncHandler.js";
+import ApiError from "../utils/ApiError.js";
+import { successResponse } from "../utils/apiResponse.js";
+
 
 // GET /api/projects
-export const getProjects = async (req, res, next) => {
-  try {
-    const projects = await Project.find().sort({ createdAt: -1 });
+// Public
+export const getProjects = asyncHandler(
+  async (req, res) => {
+    const {
+      search,
+      category,
+      featured,
+      status,
+      sort = "latest",
+    } = req.query;
 
-    res.status(200).json({
-      success: true,
-      count: projects.length,
-      projects,
-    });
-  } catch (error) {
-    next(error);
-  }
-};
+    let page = Number(req.query.page) || 1;
+    let limit = Number(req.query.limit) || 6;
 
-// GET /api/projects/:id
-export const getProjectById = async (req, res, next) => {
-  try {
-    const project = await Project.findById(req.params.id);
-
-    if (!project) {
-      res.status(404);
-      throw new Error("Project not found.");
+    if (page < 1) {
+      page = 1;
     }
 
-    res.status(200).json({
-      success: true,
-      project,
-    });
-  } catch (error) {
-    next(error);
+    if (limit < 1) {
+      limit = 6;
+    }
+
+    if (limit > 50) {
+      limit = 50;
+    }
+
+    const filter = {};
+
+    // Search title and description
+    if (search) {
+      filter.$or = [
+        {
+          title: {
+            $regex: search,
+            $options: "i",
+          },
+        },
+        {
+          description: {
+            $regex: search,
+            $options: "i",
+          },
+        },
+        {
+          technologies: {
+            $regex: search,
+            $options: "i",
+          },
+        },
+      ];
+    }
+
+    // Category filter
+    if (category) {
+      filter.category = category;
+    }
+
+    // Status filter
+    if (status) {
+      filter.status = status;
+    }
+
+    // Featured filter
+    if (featured !== undefined) {
+      filter.featured = featured === "true";
+    }
+
+    let sortOption = {
+      createdAt: -1,
+    };
+
+    if (sort === "oldest") {
+      sortOption = {
+        createdAt: 1,
+      };
+    }
+
+    if (sort === "title") {
+      sortOption = {
+        title: 1,
+      };
+    }
+
+    const skip = (page - 1) * limit;
+
+    const [
+      projects,
+      totalProjects,
+    ] = await Promise.all([
+      Project.find(filter)
+        .sort(sortOption)
+        .skip(skip)
+        .limit(limit),
+
+      Project.countDocuments(filter),
+    ]);
+
+    const totalPages = Math.ceil(
+      totalProjects / limit
+    );
+
+    return successResponse(
+      res,
+      200,
+      "Projects retrieved successfully.",
+      {
+        projects,
+
+        pagination: {
+          currentPage: page,
+          totalPages,
+          totalProjects,
+          limit,
+          hasNextPage: page < totalPages,
+          hasPreviousPage: page > 1,
+        },
+      }
+    );
   }
-};
+);
+
+
+// GET /api/projects/:id
+// Public
+export const getProjectById = asyncHandler(
+  async (req, res) => {
+    const project = await Project.findById(
+      req.params.id
+    );
+
+    if (!project) {
+      throw new ApiError(
+        404,
+        "Project not found."
+      );
+    }
+
+    return successResponse(
+      res,
+      200,
+      "Project retrieved successfully.",
+      {
+        project,
+      }
+    );
+  }
+);
+
 
 // POST /api/projects
-export const createProject = async (req, res, next) => {
-  try {
+// Admin
+export const createProject = asyncHandler(
+  async (req, res) => {
     const {
       title,
       description,
-      technologies,
-      image,
-      githubUrl,
-      liveUrl,
-      featured,
-      category,
-      status,
+      technologies = [],
+      image = {},
+      githubUrl = "",
+      liveUrl = "",
+      featured = false,
+      category = "Web Development",
+      status = "Completed",
     } = req.body;
-
-    if (!title || !description) {
-      res.status(400);
-      throw new Error("Title and description are required.");
-    }
 
     const project = await Project.create({
       title,
       description,
-      technologies: Array.isArray(technologies) ? technologies : [],
-      image,
+      technologies,
+
+      image: {
+        url: image?.url || "",
+        publicId: image?.publicId || "",
+      },
+
       githubUrl,
       liveUrl,
       featured,
@@ -66,31 +189,35 @@ export const createProject = async (req, res, next) => {
       status,
     });
 
-    res.status(201).json({
-      success: true,
-      message: "Project created successfully.",
-      project,
-    });
-  } catch (error) {
-    next(error);
+    return successResponse(
+      res,
+      201,
+      "Project created successfully.",
+      {
+        project,
+      }
+    );
   }
-};
+);
+
 
 // PUT /api/projects/:id
-export const updateProject = async (req, res, next) => {
-  try {
+// Admin
+export const updateProject = asyncHandler(
+  async (req, res) => {
     const project = await Project.findById(req.params.id);
 
     if (!project) {
-      res.status(404);
-      throw new Error("Project not found.");
+      throw new ApiError(
+        404,
+        "Project not found."
+      );
     }
 
     const allowedFields = [
       "title",
       "description",
       "technologies",
-      "image",
       "githubUrl",
       "liveUrl",
       "featured",
@@ -104,35 +231,75 @@ export const updateProject = async (req, res, next) => {
       }
     });
 
+    // Handle image update
+    if (req.body.image) {
+      const newImageUrl =
+        req.body.image.url ?? project.image?.url ?? "";
+
+      const newPublicId =
+        req.body.image.publicId ??
+        project.image?.publicId ??
+        "";
+
+      const oldPublicId = project.image?.publicId;
+
+      // Delete old Cloudinary image only when
+      // a different image is being assigned
+      if (
+        oldPublicId &&
+        newPublicId &&
+        oldPublicId !== newPublicId
+      ) {
+        await cloudinary.uploader.destroy(oldPublicId);
+      }
+
+      project.image = {
+        url: newImageUrl,
+        publicId: newPublicId,
+      };
+    }
+
     const updatedProject = await project.save();
 
-    res.status(200).json({
-      success: true,
-      message: "Project updated successfully.",
-      project: updatedProject,
-    });
-  } catch (error) {
-    next(error);
+    return successResponse(
+      res,
+      200,
+      "Project updated successfully.",
+      {
+        project: updatedProject,
+      }
+    );
   }
-};
+);
+
 
 // DELETE /api/projects/:id
-export const deleteProject = async (req, res, next) => {
-  try {
+// Admin
+export const deleteProject = asyncHandler(
+  async (req, res) => {
     const project = await Project.findById(req.params.id);
 
     if (!project) {
-      res.status(404);
-      throw new Error("Project not found.");
+      throw new ApiError(
+        404,
+        "Project not found."
+      );
     }
 
+    // Delete image from Cloudinary if it exists
+    if (project.image?.publicId) {
+      await cloudinary.uploader.destroy(
+        project.image.publicId
+      );
+    }
+
+    // Delete project from MongoDB
     await project.deleteOne();
 
-    res.status(200).json({
-      success: true,
-      message: "Project deleted successfully.",
-    });
-  } catch (error) {
-    next(error);
+    return successResponse(
+      res,
+      200,
+      "Project deleted successfully."
+    );
   }
-};
+);

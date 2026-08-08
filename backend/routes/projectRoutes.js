@@ -9,14 +9,38 @@ import {
 } from "../controllers/projectController.js";
 
 import { protect } from "../middleware/authMiddleware.js";
+import validate from "../middleware/validate.js";
+
+import {
+  createProjectSchema,
+  updateProjectSchema,
+} from "../utils/validators/projectValidator.js";
 
 const router = express.Router();
 
+// Public routes
 router.get("/", getProjects);
 router.get("/:id", getProjectById);
 
-router.post("/", protect, createProject);
-router.put("/:id", protect, updateProject);
-router.delete("/:id", protect, deleteProject);
+// Protected admin routes
+router.post(
+  "/",
+  protect,
+  validate(createProjectSchema),
+  createProject
+);
+
+router.put(
+  "/:id",
+  protect,
+  validate(updateProjectSchema),
+  updateProject
+);
+
+router.delete(
+  "/:id",
+  protect,
+  deleteProject
+);
 
 export default router;
