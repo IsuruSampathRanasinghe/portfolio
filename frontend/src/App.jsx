@@ -88,10 +88,16 @@ function App() {
     <BrowserRouter>
       <Suspense
         fallback={
-          <LoadingSpinner
-            fullScreen
-            text="Loading..."
-          />
+          <div
+            role="status"
+            aria-live="polite"
+            aria-label="Loading page"
+          >
+            <LoadingSpinner
+              fullScreen
+              text="Loading..."
+            />
+          </div>
         }
       >
         <Routes>

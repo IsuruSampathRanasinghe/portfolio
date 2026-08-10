@@ -12,96 +12,165 @@ const Skills = () => {
     error,
   } = useSkills();
 
-  const groupedSkills = skills.reduce(
-    (groups, skill) => {
-      const category =
-        skill.category || "Other";
+  const groupedSkills =
+    skills.reduce(
+      (groups, skill) => {
+        const category =
+          skill.category ||
+          "Other";
 
-      if (!groups[category]) {
-        groups[category] = [];
-      }
+        if (
+          !groups[
+            category
+          ]
+        ) {
+          groups[
+            category
+          ] = [];
+        }
 
-      groups[category].push(skill);
+        groups[
+          category
+        ].push(skill);
 
-      return groups;
-    },
-    {}
-  );
+        return groups;
+      },
+      {}
+    );
 
   return (
     <section
       id="skills"
-      className="relative bg-slate-950/40 py-28"
+      aria-labelledby="skills-heading"
+      className="relative bg-slate-950/60 py-20 sm:py-24 lg:py-28"
     >
       <Container>
-        <SectionTitle
-          title="Skills"
-          subtitle="Technologies and tools I use to build modern software applications."
-        />
+        <div id="skills-heading">
+          <SectionTitle
+            title="Technical Skills"
+            subtitle="Technologies and tools I use to design, build and maintain modern software applications."
+          />
+        </div>
 
+        {/* Loading */}
         {loading && (
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <div
+            aria-busy="true"
+            aria-label="Loading skills"
+            className="grid gap-5 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3"
+          >
             {Array.from({
               length: 6,
-            }).map((_, index) => (
-              <div
-                key={index}
-                className="h-44 animate-pulse rounded-2xl bg-slate-900"
-              />
-            ))}
+            }).map(
+              (
+                _,
+                index
+              ) => (
+                <div
+                  key={
+                    index
+                  }
+                  aria-hidden="true"
+                  className="h-40 animate-pulse rounded-3xl bg-slate-900 sm:h-44"
+                />
+              )
+            )}
           </div>
         )}
 
-        {!loading && error && (
-          <div className="rounded-xl border border-red-500/20 bg-red-500/5 p-5 text-center text-red-400">
-            {error}
-          </div>
-        )}
+        {/* Error */}
+        {!loading &&
+          error && (
+            <div
+              role="alert"
+              className="rounded-2xl border border-red-500/20 bg-red-500/5 p-5 text-center text-sm text-red-400 sm:p-6 sm:text-base"
+            >
+              {error}
+            </div>
+          )}
 
+        {/* Empty */}
         {!loading &&
           !error &&
-          skills.length === 0 && (
-            <p className="text-center text-slate-500">
-              No skills have been added yet.
+          skills.length ===
+            0 && (
+            <p className="py-8 text-center text-slate-500">
+              No skills have
+              been added yet.
             </p>
           )}
 
+        {/* Skills */}
         {!loading &&
           !error &&
-          skills.length > 0 && (
-            <div className="space-y-14">
+          skills.length >
+            0 && (
+            <div className="space-y-12 sm:space-y-14">
               {Object.entries(
                 groupedSkills
               ).map(
                 ([
                   category,
                   categorySkills,
-                ]) => (
-                  <div key={category}>
-                    <div className="mb-7 flex items-center gap-5">
-                      <h3 className="font-[Poppins] text-xl font-semibold text-white">
-                        {category}
-                      </h3>
+                ]) => {
+                  const categoryId =
+                    `skills-${category
+                      .toLowerCase()
+                      .replace(
+                        /[^a-z0-9]+/g,
+                        "-"
+                      )}`;
 
-                      <div className="h-px flex-1 bg-gradient-to-r from-slate-700 to-transparent" />
-                    </div>
+                  return (
+                    <section
+                      key={
+                        category
+                      }
+                      aria-labelledby={
+                        categoryId
+                      }
+                    >
+                      <div className="mb-5 flex items-center gap-4 sm:mb-7 sm:gap-5">
+                        <h3
+                          id={
+                            categoryId
+                          }
+                          className="shrink-0 font-[Poppins] text-lg font-semibold text-white sm:text-xl"
+                        >
+                          {
+                            category
+                          }
+                        </h3>
 
-                    <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                      {categorySkills.map(
-                        (
-                          skill,
-                          index
-                        ) => (
-                          <SkillCard
-                            key={skill._id}
-                            skill={skill}
-                            index={index}
-                          />
-                        )
-                      )}
-                    </div>
-                  </div>
-                )
+                        <div
+                          aria-hidden="true"
+                          className="h-px min-w-0 flex-1 bg-gradient-to-r from-slate-700 to-transparent"
+                        />
+                      </div>
+
+                      <div className="grid gap-5 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
+                        {categorySkills.map(
+                          (
+                            skill,
+                            index
+                          ) => (
+                            <SkillCard
+                              key={
+                                skill._id
+                              }
+                              skill={
+                                skill
+                              }
+                              index={
+                                index
+                              }
+                            />
+                          )
+                        )}
+                      </div>
+                    </section>
+                  );
+                }
               )}
             </div>
           )}

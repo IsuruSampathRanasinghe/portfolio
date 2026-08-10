@@ -1,6 +1,9 @@
 import { useState } from "react";
 
-import { motion } from "framer-motion";
+import {
+  motion,
+  useReducedMotion,
+} from "framer-motion";
 
 import {
   FiExternalLink,
@@ -18,6 +21,9 @@ const ProjectCard = ({
     setImageError,
   ] = useState(false);
 
+  const shouldReduceMotion =
+    useReducedMotion();
+
   const image =
     project.image?.url &&
     !imageError
@@ -26,24 +32,42 @@ const ProjectCard = ({
 
   return (
     <motion.article
-      initial={{
-        opacity: 0,
-        y: 30,
-      }}
-      whileInView={{
-        opacity: 1,
-        y: 0,
-      }}
+      aria-labelledby={`project-title-${project._id}`}
+      initial={
+        shouldReduceMotion
+          ? false
+          : {
+              opacity: 0,
+              y: 30,
+            }
+      }
+      whileInView={
+        shouldReduceMotion
+          ? undefined
+          : {
+              opacity: 1,
+              y: 0,
+            }
+      }
       viewport={{
         once: true,
       }}
-      transition={{
-        duration: 0.5,
-        delay: index * 0.06,
-      }}
-      whileHover={{
-        y: -6,
-      }}
+      transition={
+        shouldReduceMotion
+          ? { duration: 0 }
+          : {
+              duration: 0.5,
+              delay:
+                index * 0.06,
+            }
+      }
+      whileHover={
+        shouldReduceMotion
+          ? undefined
+          : {
+              y: -6,
+            }
+      }
       className="group overflow-hidden rounded-3xl border border-slate-800/80 bg-slate-900/55 shadow-xl shadow-black/10 backdrop-blur transition duration-300 hover:border-blue-500/50 hover:shadow-2xl hover:shadow-blue-500/10"
     >
       {/* Project Image */}
@@ -57,10 +81,18 @@ const ProjectCard = ({
             onError={() =>
               setImageError(true)
             }
-            className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+            className={`h-full w-full object-cover transition duration-500 ${
+              shouldReduceMotion
+                ? ""
+                : "group-hover:scale-105"
+            }`}
           />
         ) : (
-          <div className="flex h-full w-full items-center justify-center text-sm text-slate-600">
+          <div
+            role="img"
+            aria-label={`${project.title} project preview unavailable`}
+            className="flex h-full w-full items-center justify-center text-sm text-slate-500"
+          >
             Project Preview
           </div>
         )}
@@ -85,7 +117,10 @@ const ProjectCard = ({
           {project.category}
         </p>
 
-        <h3 className="mt-2 font-[Poppins] text-xl font-semibold text-white transition group-hover:text-blue-300">
+        <h3
+          id={`project-title-${project._id}`}
+          className="mt-2 font-[Poppins] text-xl font-semibold text-white transition group-hover:text-blue-300"
+        >
           {project.title}
         </h3>
 
@@ -96,7 +131,10 @@ const ProjectCard = ({
         {/* Technologies */}
         {project.technologies
           ?.length > 0 && (
-          <div className="mt-5 flex flex-wrap gap-2">
+          <div
+            className="mt-5 flex flex-wrap gap-2"
+            aria-label="Technologies used"
+          >
             {project.technologies.map(
               (technology) => (
                 <Badge
@@ -121,11 +159,13 @@ const ProjectCard = ({
                 project.githubUrl
               }
               target="_blank"
-              rel="noreferrer"
-              aria-label={`View ${project.title} source code on GitHub`}
-              className="inline-flex items-center gap-2 rounded-xl border border-slate-700 bg-slate-950/60 px-4 py-2.5 text-sm font-semibold text-slate-300 transition hover:border-slate-500 hover:text-white"
+              rel="noopener noreferrer"
+              aria-label={`View ${project.title} source code on GitHub (opens in a new tab)`}
+              className="inline-flex items-center gap-2 rounded-xl border border-slate-700 bg-slate-950/60 px-4 py-2.5 text-sm font-semibold text-slate-300 outline-none transition hover:border-slate-500 hover:text-white focus-visible:ring-2 focus-visible:ring-blue-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950"
             >
-              <FiGithub />
+              <FiGithub
+                aria-hidden="true"
+              />
 
               GitHub
             </a>
@@ -137,11 +177,13 @@ const ProjectCard = ({
                 project.liveUrl
               }
               target="_blank"
-              rel="noreferrer"
-              aria-label={`Open ${project.title} live demo`}
-              className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-blue-500 to-violet-500 px-4 py-2.5 text-sm font-semibold text-white transition hover:-translate-y-0.5"
+              rel="noopener noreferrer"
+              aria-label={`Open ${project.title} live demo (opens in a new tab)`}
+              className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-blue-500 to-violet-500 px-4 py-2.5 text-sm font-semibold text-white outline-none transition hover:-translate-y-0.5 focus-visible:ring-2 focus-visible:ring-blue-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950"
             >
-              <FiExternalLink />
+              <FiExternalLink
+                aria-hidden="true"
+              />
 
               Live Demo
             </a>
