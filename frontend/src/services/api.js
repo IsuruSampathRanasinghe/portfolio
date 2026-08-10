@@ -1,41 +1,63 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL,
+  baseURL:
+    import.meta.env.VITE_API_URL,
+  timeout: 15000,
 });
 
-api.interceptors.request.use((config) => {
-  const token =
-    localStorage.getItem("adminToken");
+api.interceptors.request.use(
+  (config) => {
+    const token =
+      localStorage.getItem(
+        "adminToken"
+      );
 
-  if (token) {
-    config.headers.Authorization =
-      `Bearer ${token}`;
-  }
+    if (token) {
+      config.headers =
+        config.headers || {};
 
-  return config;
-});
+      config.headers.Authorization =
+        `Bearer ${token}`;
+    }
+
+    return config;
+  },
+
+  (error) =>
+    Promise.reject(error)
+);
 
 api.interceptors.response.use(
-  (response) => response,
+  (response) =>
+    response,
 
   (error) => {
-    if (
-      error.response?.status === 401
-    ) {
+    const status =
+      error.response?.status;
+
+    if (status === 401) {
       localStorage.removeItem(
         "adminToken"
       );
 
+      const isAdminPage =
+        window.location.pathname
+          .startsWith(
+            "/admin"
+          );
+
+      const isLoginPage =
+        window.location.pathname ===
+        "/admin/login";
+
       if (
-        window.location.pathname.startsWith(
-          "/admin"
-        ) &&
-        window.location.pathname !==
-          "/admin/login"
+        isAdminPage &&
+        !isLoginPage
       ) {
-        window.location.href =
-          "/admin/login";
+        window.location.replace(
+          "/admin/login"
+        );
       }
     }
 

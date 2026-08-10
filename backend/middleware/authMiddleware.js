@@ -6,9 +6,18 @@ import ApiError from "../utils/ApiError.js";
 
 export const protect = asyncHandler(
   async (req, res, next) => {
+    // Make sure JWT_SECRET is configured
+    if (!process.env.JWT_SECRET) {
+      throw new ApiError(
+        500,
+        "Authentication configuration error."
+      );
+    }
+
     const authHeader =
       req.headers.authorization;
 
+    // Check Authorization header
     if (
       !authHeader ||
       !authHeader.startsWith("Bearer ")
@@ -19,8 +28,10 @@ export const protect = asyncHandler(
       );
     }
 
-    const token =
-      authHeader.split(" ")[1];
+    // Extract token
+    const token = authHeader
+      .slice(7)
+      .trim();
 
     if (!token) {
       throw new ApiError(
@@ -32,12 +43,19 @@ export const protect = asyncHandler(
     let decoded;
 
     try {
+      // Verify token and only allow HS256
       decoded = jwt.verify(
         token,
-        process.env.JWT_SECRET
+        process.env.JWT_SECRET,
+        {
+          algorithms: ["HS256"],
+        }
       );
     } catch (error) {
-      if (error.name === "TokenExpiredError") {
+      if (
+        error.name ===
+        "TokenExpiredError"
+      ) {
         throw new ApiError(
           401,
           "Authentication token has expired."
@@ -50,9 +68,19 @@ export const protect = asyncHandler(
       );
     }
 
-    const admin = await Admin.findById(
-      decoded.id
-    ).select("-password");
+    // Make sure token contains an admin ID
+    if (!decoded?.id) {
+      throw new ApiError(
+        401,
+        "Invalid authentication token."
+      );
+    }
+
+    // Verify that the admin still exists
+    const admin =
+      await Admin.findById(
+        decoded.id
+      ).select("-password");
 
     if (!admin) {
       throw new ApiError(
@@ -61,6 +89,7 @@ export const protect = asyncHandler(
       );
     }
 
+    // Attach authenticated admin
     req.admin = admin;
 
     next();
