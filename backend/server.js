@@ -27,6 +27,7 @@ import errorHandler from "./middleware/errorMiddleware.js";
 
 const app = express();
 
+// Required when running behind Render/reverse proxy
 app.set("trust proxy", 1);
 
 const PORT = process.env.PORT || 5000;
@@ -38,7 +39,6 @@ const PORT = process.env.PORT || 5000;
 */
 
 app.use(helmet());
-
 app.use(compression());
 
 /*
@@ -117,6 +117,20 @@ const loginLimiter = rateLimit({
   },
 });
 
+// Upload limiter
+const uploadLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 30,
+
+  standardHeaders: "draft-8",
+  legacyHeaders: false,
+
+  message: {
+    success: false,
+    message: "Too many upload requests. Please try again later.",
+  },
+});
+
 /*
 |--------------------------------------------------------------------------
 | Basic Route
@@ -136,7 +150,7 @@ app.get("/", (req, res) => {
 |--------------------------------------------------------------------------
 */
 
-// Health check
+// Health
 app.use(
   "/api/health",
   apiLimiter,
@@ -184,14 +198,14 @@ app.use(
   experienceRoutes
 );
 
-// Contact messages
+// Contact
 app.use(
   "/api/contact",
   apiLimiter,
   contactRoutes
 );
 
-// Portfolio settings
+// Settings
 app.use(
   "/api/settings",
   apiLimiter,
@@ -206,9 +220,9 @@ app.use(
 );
 
 // Uploads
-// Uploads are intentionally not using the general API limiter here.
 app.use(
   "/api/upload",
+  uploadLimiter,
   uploadRoutes
 );
 
@@ -218,10 +232,7 @@ app.use(
 |--------------------------------------------------------------------------
 */
 
-// 404 handler
 app.use(notFound);
-
-// Global error handler
 app.use(errorHandler);
 
 /*

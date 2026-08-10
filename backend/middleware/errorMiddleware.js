@@ -1,31 +1,3 @@
-// export const notFound = (req, res, next) => {
-//   const error = new Error(`Route not found: ${req.originalUrl}`);
-//   res.status(404);
-//   next(error);
-// };
-
-// export const errorHandler = (error, req, res, next) => {
-//   let statusCode = res.statusCode === 200 ? 500 : res.statusCode;
-//   let message = error.message;
-
-//   if (error.name === "CastError") {
-//     statusCode = 400;
-//     message = "Invalid resource ID.";
-//   }
-
-//   if (error.code === "LIMIT_FILE_SIZE") {
-//     statusCode = 400;
-//     message = "Image size must be less than 5 MB.";
-//   }
-
-//   res.status(statusCode).json({
-//     success: false,
-//     message,
-//     stack: process.env.NODE_ENV === "production" ? null : error.stack,
-//   });
-// };
-
-
 import multer from "multer";
 
 const errorHandler = (
@@ -35,42 +7,67 @@ const errorHandler = (
   next
 ) => {
   let statusCode =
-    res.statusCode === 200
-      ? 500
-      : res.statusCode;
+    error.statusCode ||
+    (res.statusCode !== 200
+      ? res.statusCode
+      : 500);
 
-  let message = error.message;
+  let message =
+    error.message ||
+    "Internal server error.";
 
-  if (error.statusCode) {
-    statusCode = error.statusCode;
-  }
-
+  // Invalid MongoDB ObjectId
   if (error.name === "CastError") {
     statusCode = 400;
     message = "Invalid resource ID.";
   }
 
+  // MongoDB duplicate key
   if (error.code === 11000) {
     statusCode = 400;
     message = "Duplicate value.";
   }
 
+  // Multer upload errors
   if (
-    error instanceof multer.MulterError &&
-    error.code === "LIMIT_FILE_SIZE"
+    error instanceof
+    multer.MulterError
   ) {
     statusCode = 400;
+
+    if (
+      error.code ===
+      "LIMIT_FILE_SIZE"
+    ) {
+      message =
+        "Image size must be less than 5MB.";
+    } else {
+      message =
+        "Unable to process uploaded file.";
+    }
+  }
+
+  const isProduction =
+    process.env.NODE_ENV ===
+    "production";
+
+  // Don't expose unexpected internal
+  // error details in production.
+  if (
+    isProduction &&
+    statusCode >= 500
+  ) {
     message =
-      "Image size must be less than 5MB.";
+      "Internal server error.";
   }
 
   res.status(statusCode).json({
     success: false,
     message,
-    stack:
-      process.env.NODE_ENV === "production"
-        ? undefined
-        : error.stack,
+
+    ...(!isProduction && {
+      stack: error.stack,
+    }),
   });
 };
 
