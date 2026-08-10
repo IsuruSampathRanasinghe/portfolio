@@ -1,4 +1,9 @@
 import {
+  lazy,
+  Suspense,
+} from "react";
+
+import {
   BrowserRouter,
   Routes,
   Route,
@@ -9,99 +14,178 @@ import PublicLayout from "./layouts/PublicLayout";
 import AdminLayout from "./layouts/AdminLayout";
 
 import Home from "./pages/public/Home";
-import NotFound from "./pages/public/NotFound";
-
-import Login from "./pages/admin/Login";
-import Dashboard from "./pages/admin/Dashboard";
-
-import AdminProjects from "./pages/admin/Projects";
-import AdminSkills from "./pages/admin/Skills";
-import AdminEducation from "./pages/admin/Education";
-import AdminExperience from "./pages/admin/Experience";
-import AdminMessages from "./pages/admin/Messages";
-import AdminSettings from "./pages/admin/Settings";
 
 import ProtectedRoute from "./routes/ProtectedRoute";
+
+import LoadingSpinner from "./components/common/LoadingSpinner";
+
+// Lazy-loaded pages
+const NotFound = lazy(
+  () =>
+    import(
+      "./pages/public/NotFound"
+    )
+);
+
+const Login = lazy(
+  () =>
+    import(
+      "./pages/admin/Login"
+    )
+);
+
+const Dashboard = lazy(
+  () =>
+    import(
+      "./pages/admin/Dashboard"
+    )
+);
+
+const AdminProjects = lazy(
+  () =>
+    import(
+      "./pages/admin/Projects"
+    )
+);
+
+const AdminSkills = lazy(
+  () =>
+    import(
+      "./pages/admin/Skills"
+    )
+);
+
+const AdminEducation = lazy(
+  () =>
+    import(
+      "./pages/admin/Education"
+    )
+);
+
+const AdminExperience = lazy(
+  () =>
+    import(
+      "./pages/admin/Experience"
+    )
+);
+
+const AdminMessages = lazy(
+  () =>
+    import(
+      "./pages/admin/Messages"
+    )
+);
+
+const AdminSettings = lazy(
+  () =>
+    import(
+      "./pages/admin/Settings"
+    )
+);
 
 function App() {
   return (
     <BrowserRouter>
-      <Routes>
-        {/* Public Routes */}
-        <Route element={<PublicLayout />}>
-          <Route
-            path="/"
-            element={<Home />}
+      <Suspense
+        fallback={
+          <LoadingSpinner
+            fullScreen
+            text="Loading..."
           />
-        </Route>
-
-        {/* Admin Login */}
-        <Route
-          path="/admin/login"
-          element={<Login />}
-        />
-
-        {/* Protected Admin Routes */}
-        <Route
-          element={
-            <ProtectedRoute>
-              <AdminLayout />
-            </ProtectedRoute>
-          }
-        >
-          {/* Admin fallback */}
+        }
+      >
+        <Routes>
+          {/* Public */}
           <Route
-            path="/admin"
             element={
-              <Navigate
-                to="/admin/dashboard"
-                replace
-              />
+              <PublicLayout />
             }
-          />
+          >
+            <Route
+              path="/"
+              element={<Home />}
+            />
+          </Route>
 
+          {/* Admin Login */}
           <Route
-            path="/admin/dashboard"
-            element={<Dashboard />}
+            path="/admin/login"
+            element={<Login />}
           />
 
+          {/* Protected Admin */}
           <Route
-            path="/admin/projects"
-            element={<AdminProjects />}
-          />
+            element={
+              <ProtectedRoute>
+                <AdminLayout />
+              </ProtectedRoute>
+            }
+          >
+            <Route
+              path="/admin"
+              element={
+                <Navigate
+                  to="/admin/dashboard"
+                  replace
+                />
+              }
+            />
 
+            <Route
+              path="/admin/dashboard"
+              element={<Dashboard />}
+            />
+
+            <Route
+              path="/admin/projects"
+              element={
+                <AdminProjects />
+              }
+            />
+
+            <Route
+              path="/admin/skills"
+              element={
+                <AdminSkills />
+              }
+            />
+
+            <Route
+              path="/admin/education"
+              element={
+                <AdminEducation />
+              }
+            />
+
+            <Route
+              path="/admin/experience"
+              element={
+                <AdminExperience />
+              }
+            />
+
+            <Route
+              path="/admin/messages"
+              element={
+                <AdminMessages />
+              }
+            />
+
+            <Route
+              path="/admin/settings"
+              element={
+                <AdminSettings />
+              }
+            />
+          </Route>
+
+          {/* 404 */}
           <Route
-            path="/admin/skills"
-            element={<AdminSkills />}
+            path="*"
+            element={<NotFound />}
           />
-
-          <Route
-            path="/admin/education"
-            element={<AdminEducation />}
-          />
-
-          <Route
-            path="/admin/experience"
-            element={<AdminExperience />}
-          />
-
-          <Route
-            path="/admin/messages"
-            element={<AdminMessages />}
-          />
-
-          <Route
-            path="/admin/settings"
-            element={<AdminSettings />}
-          />
-        </Route>
-
-        {/* 404 */}
-        <Route
-          path="*"
-          element={<NotFound />}
-        />
-      </Routes>
+        </Routes>
+      </Suspense>
     </BrowserRouter>
   );
 }

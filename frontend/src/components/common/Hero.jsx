@@ -26,43 +26,56 @@ const Hero = () => {
     return (
       <section
         id="home"
-        className="flex min-h-screen items-center bg-transparent pt-24"
+        className="relative flex min-h-screen items-center overflow-hidden bg-slate-950 py-24"
       >
         <Container>
-          <div className="grid gap-12 lg:grid-cols-2">
-            <div className="animate-pulse">
-              <div className="h-5 w-28 rounded bg-slate-800" />
-              <div className="mt-5 h-16 max-w-xl rounded bg-slate-800" />
-              <div className="mt-5 h-10 max-w-2xl rounded bg-slate-800" />
-              <div className="mt-5 h-24 max-w-2xl rounded bg-slate-800" />
+          <div className="grid items-center gap-16 lg:grid-cols-[1.1fr_0.9fr]">
+            <div>
+              <div className="h-9 w-44 animate-pulse rounded-full bg-slate-800" />
+
+              <div className="mt-8 h-5 w-28 animate-pulse rounded bg-slate-800" />
+
+              <div className="mt-4 h-16 max-w-xl animate-pulse rounded-2xl bg-slate-800" />
+
+              <div className="mt-5 h-8 max-w-lg animate-pulse rounded-xl bg-slate-800" />
+
+              <div className="mt-6 h-24 max-w-2xl animate-pulse rounded-xl bg-slate-800" />
+
+              <div className="mt-9 flex gap-4">
+                <div className="h-12 w-36 animate-pulse rounded-xl bg-slate-800" />
+
+                <div className="h-12 w-36 animate-pulse rounded-xl bg-slate-800" />
+              </div>
             </div>
+
+            <div className="mx-auto aspect-square w-full max-w-sm animate-pulse rounded-full bg-slate-800" />
           </div>
         </Container>
 
         <motion.a
-            href="#about"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{
-                delay: 1.1,
-            }}
-            className="absolute bottom-8 left-1/2 hidden -translate-x-1/2 flex-col items-center gap-2 text-xs text-slate-500 md:flex"
-            >
-            <span>
-                Scroll Down
-            </span>
+          href="#about"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{
+            delay: 1.1,
+          }}
+          className="absolute bottom-8 left-1/2 hidden -translate-x-1/2 flex-col items-center gap-2 text-xs text-slate-500 md:flex"
+        >
+          <span>
+            Scroll Down
+          </span>
 
-            <motion.div
-                animate={{
-                y: [0, 6, 0],
-                }}
-                transition={{
-                duration: 1.5,
-                repeat: Infinity,
-                }}
-            >
-                <FiArrowDown className="text-lg" />
-            </motion.div>
+          <motion.div
+            animate={{
+              y: [0, 6, 0],
+            }}
+            transition={{
+              duration: 1.5,
+              repeat: Infinity,
+            }}
+          >
+            <FiArrowDown className="text-lg" />
+          </motion.div>
         </motion.a>
       </section>
     );
@@ -70,12 +83,13 @@ const Hero = () => {
 
   if (error) {
     return (
-      <section className="flex min-h-screen items-center">
-        <Container>
-          <p className="text-red-400">
-            {error}
-          </p>
-        </Container>
+      <section
+        id="home"
+        className="flex min-h-screen items-center justify-center bg-slate-950 px-6"
+      >
+        <p className="text-center text-red-400">
+          {error}
+        </p>
       </section>
     );
   }
@@ -98,16 +112,14 @@ const Hero = () => {
   return (
     <section
       id="home"
-      className="relative flex min-h-screen items-center overflow-hidden pt-28"
+      className="relative flex min-h-screen items-center overflow-hidden bg-slate-950 py-24"
     >
-
       <div className="pointer-events-none absolute -left-40 top-32 h-96 w-96 rounded-full bg-blue-500/10 blur-3xl" />
 
       <div className="pointer-events-none absolute right-0 top-20 h-[500px] w-[500px] rounded-full bg-violet-500/10 blur-3xl" />
 
       <Container>
         <div className="relative z-10 grid items-center gap-16 lg:grid-cols-[1.1fr_0.9fr]">
-
           <motion.div
             initial={{
               opacity: 0,
@@ -145,7 +157,6 @@ const Hero = () => {
             </p>
 
             <div className="mt-9 flex flex-wrap gap-4">
-
               <a
                 href="#projects"
                 className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-blue-500 via-blue-500 to-violet-500 px-6 py-3.5 font-semibold text-white shadow-lg shadow-blue-500/20 transition duration-300 hover:-translate-y-0.5 hover:shadow-blue-500/30"
@@ -170,10 +181,11 @@ const Hero = () => {
             </div>
 
             <div className="mt-9 flex items-center gap-4">
-
               {settings?.githubUrl && (
                 <a
-                  href={settings.githubUrl}
+                  href={
+                    settings.githubUrl
+                  }
                   target="_blank"
                   rel="noreferrer"
                   aria-label="GitHub"
@@ -185,7 +197,9 @@ const Hero = () => {
 
               {settings?.linkedinUrl && (
                 <a
-                  href={settings.linkedinUrl}
+                  href={
+                    settings.linkedinUrl
+                  }
                   target="_blank"
                   rel="noreferrer"
                   aria-label="LinkedIn"
@@ -236,12 +250,16 @@ const Hero = () => {
               className="relative aspect-square w-full max-w-sm rounded-full bg-gradient-to-br from-blue-500 via-cyan-400 to-violet-500 p-[2px] shadow-2xl shadow-blue-500/20"
             >
               <div className="h-full w-full rounded-full bg-slate-950 p-5">
-
                 <div className="h-full w-full overflow-hidden rounded-full bg-slate-900">
                   {profileImage ? (
                     <img
-                      src={profileImage}
-                      alt={name}
+                      src={
+                        profileImage
+                      }
+                      alt={`${name} profile`}
+                      loading="eager"
+                      fetchPriority="high"
+                      decoding="async"
                       className="h-full w-full object-cover"
                     />
                   ) : (
@@ -258,13 +276,41 @@ const Hero = () => {
                     </div>
                   )}
                 </div>
-
               </div>
             </motion.div>
-
           </motion.div>
         </div>
       </Container>
+
+      <motion.a
+        href="#about"
+        initial={{
+          opacity: 0,
+        }}
+        animate={{
+          opacity: 1,
+        }}
+        transition={{
+          delay: 1.1,
+        }}
+        className="absolute bottom-8 left-1/2 hidden -translate-x-1/2 flex-col items-center gap-2 text-xs text-slate-500 md:flex"
+      >
+        <span>
+          Scroll Down
+        </span>
+
+        <motion.div
+          animate={{
+            y: [0, 6, 0],
+          }}
+          transition={{
+            duration: 1.5,
+            repeat: Infinity,
+          }}
+        >
+          <FiArrowDown className="text-lg" />
+        </motion.div>
+      </motion.a>
     </section>
   );
 };
