@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://portfolio-ashen-seven-49.vercel.app/sitemap.xml
