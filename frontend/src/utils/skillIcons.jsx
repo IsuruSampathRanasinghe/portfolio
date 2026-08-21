@@ -11,7 +11,23 @@ import {
   SiGit,
   SiGithub,
   SiDocker,
+  SiPostman,
+  SiNpm,
+  SiPhp,
+  SiPython,
+  SiMongoose,
+  SiPrisma,
+  SiCloudinary,
+  SiVercel,
+  SiSocketdotio,
+  SiAxios,
+  SiDevelopmentcontainers,
+  SiThemoviedatabase
 } from "react-icons/si";
+
+import { FaJava } from "react-icons/fa6";
+import { VscVscode } from "react-icons/vsc";
+import { DiResponsive } from "react-icons/di";
 
 const iconMap = {
   react: SiReact,
@@ -27,7 +43,24 @@ const iconMap = {
   git: SiGit,
   github: SiGithub,
   docker: SiDocker,
+  java: FaJava,
+  postman: SiPostman,
+  vscode: VscVscode,
+  npm: SiNpm,
+  php: SiPhp,
+  python: SiPython,
+  mongoose: SiMongoose,
+  prisma: SiPrisma,
+  cloudinary: SiCloudinary,
+  vercel: SiVercel,
+  socketio: SiSocketdotio,
+  axios: SiAxios,
+  fullstackdevelopment: SiDevelopmentcontainers,
+  responsivedesign: DiResponsive,
+  datavisualization: SiThemoviedatabase
 };
+
+
 
 export const getSkillIcon = (
   iconName

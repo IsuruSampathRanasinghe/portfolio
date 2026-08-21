@@ -16,7 +16,7 @@ const SkillCard = ({
     <motion.div
       initial={{
         opacity: 0,
-        y: 25,
+        y: 18,
       }}
       whileInView={{
         opacity: 1,
@@ -26,21 +26,21 @@ const SkillCard = ({
         once: true,
       }}
       transition={{
-        duration: 0.45,
-        delay: index * 0.05,
+        duration: 0.4,
+        delay:
+          index * 0.05,
       }}
-      whileHover={{
-        y: -6,
-      }}
-      className="group rounded-3xl border border-slate-800/80 bg-slate-900/50 p-6 shadow-xl shadow-black/5 backdrop-blur transition duration-300 hover:border-blue-500/40 hover:shadow-2xl hover:shadow-blue-500/10"
+      className="group/skill"
     >
-      <div className="flex items-center gap-4">
+      {/* Skill information */}
+      <div className="flex items-center gap-3">
 
-        <div className="flex h-13 w-13 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500/20 to-violet-500/20 text-2xl text-blue-300 transition duration-300 group-hover:scale-110">
+        {/* Skill icon */}
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-950/70 text-xl text-blue-300 ring-1 ring-slate-800/80 transition duration-300 group-hover/skill:scale-105 group-hover/skill:ring-blue-500/40">
           {SkillIcon ? (
             <SkillIcon />
           ) : (
-            <span className="text-base font-bold">
+            <span className="text-xs font-bold">
               {skill.name
                 ?.split(" ")
                 .map(
@@ -54,31 +54,29 @@ const SkillCard = ({
           )}
         </div>
 
-        <div className="min-w-0">
-          <h3 className="truncate font-[Poppins] text-lg font-semibold text-white transition group-hover:text-blue-300">
-            {skill.name}
-          </h3>
-
-          <p className="mt-1 text-sm text-slate-500">
-            {skill.category}
-          </p>
+        {/* Skill name */}
+        <div className="min-w-0 flex-1">
+          <h4 className="truncate font-[Poppins] text-sm font-medium text-slate-200 transition duration-300 group-hover/skill:text-blue-300 sm:text-[15px]">
+            {
+              skill.name
+            }
+          </h4>
         </div>
+
+        {/* Percentage */}
+        <span className="shrink-0 text-xs font-semibold text-blue-300 sm:text-sm">
+          {
+            skill.proficiency
+          }
+          %
+        </span>
 
       </div>
 
-      <div className="mt-7">
+      {/* Progress */}
+      <div className="mt-3 pl-[52px]">
 
-        <div className="mb-2 flex items-center justify-between">
-          <span className="text-sm text-slate-500">
-            Proficiency
-          </span>
-
-          <span className="text-sm font-semibold text-blue-300">
-            {skill.proficiency}%
-          </span>
-        </div>
-
-        <div className="h-2.5 overflow-hidden rounded-full bg-slate-800">
+        <div className="h-1.5 overflow-hidden rounded-full bg-slate-800/90">
           <motion.div
             initial={{
               width: 0,
@@ -90,8 +88,10 @@ const SkillCard = ({
               once: true,
             }}
             transition={{
-              duration: 1,
+              duration: 0.9,
               ease: "easeOut",
+              delay:
+                index * 0.04,
             }}
             className="h-full rounded-full bg-gradient-to-r from-blue-500 via-cyan-400 to-violet-500"
           />
